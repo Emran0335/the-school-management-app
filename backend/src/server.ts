@@ -9,10 +9,12 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import cors from "cors";
-import { connectDB } from "./config/db";
+import connectDB from "./config/db.ts";
 import userRoutes from "./routes/user.ts";
 
-dotenv.config();
+dotenv.config({
+  path: "./.env",
+});
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -39,7 +41,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // import user routes
-app.use("/api/users", userRoutes)
+app.use("/api/users", userRoutes);
 
 app.use((err: Error, req: Request, res: Response, next: Function) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
@@ -52,8 +54,10 @@ app.use((err: Error, req: Request, res: Response, next: Function) => {
   });
 });
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
-  });
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is listening on port: ${PORT}`);
+    });
+  })
+  .catch((err) => console.log("MONGO db connection failed !!!", err));

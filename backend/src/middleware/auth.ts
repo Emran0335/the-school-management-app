@@ -10,7 +10,9 @@ export interface AuthRequest extends Request {
 // Protect routes middleware
 export const protect = async (
   req: AuthRequest,
+
   res: Response,
+
   next: NextFunction,
 ) => {
   let token;
@@ -19,19 +21,30 @@ export const protect = async (
     token = req.cookies.jwt;
   }
 
-  if (token) {
-    try {
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
-      req.user = (await User.findById(decoded.userId).select(
-        "-password",
-      )) as IUser;
-      next();
-    } catch (error) {
-      console.log(error);
-      res.status(401).json({ message: "Not authorized, token failed" });
+  if (!token) {
+    return res.status(401).json({ message: "Not authorized, no token" });
+  }
+
+  try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is missing");
     }
-  } else {
-    res.status(401).json({ message: "Not authorized, no token" });
+
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
+
+    const foundUser = await User.findById(decoded.userId).select("-password");
+
+    if (!foundUser) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    req.user = foundUser as IUser;
+
+    next();
+  } catch (error) {
+    console.log(error);
+
+    return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
 

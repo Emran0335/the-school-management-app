@@ -18,7 +18,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       studentClass,
       teacherSubject,
       isActive,
-    } = req.body;
+    } = req.body || {};
 
     // check if user already exists
     const existingUser = await User.findOne({ email });
