@@ -10,9 +10,7 @@ export interface AuthRequest extends Request {
 // Protect routes middleware
 export const protect = async (
   req: AuthRequest,
-
   res: Response,
-
   next: NextFunction,
 ) => {
   let token;
